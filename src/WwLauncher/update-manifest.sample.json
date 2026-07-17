@@ -1,0 +1,9 @@
+{
+  "product": "WwLauncher",
+  "version": "0.1.0",
+  "downloadUrl": "https://example.com/releases/WwLauncher-0.1.0.zip",
+  "sha256": "",
+  "mandatory": false,
+  "releaseNotes": "空啟動器骨架：版本檢查、WinUI 3 視窗。",
+  "publishedAt": "2026-07-17T00:00:00+08:00"
+}
