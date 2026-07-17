@@ -1,0 +1,11 @@
+#!/bin/sh
+# Strip Cursor AI co-author / attribution trailers so Contributors stay human-only.
+MSG_FILE="$1"
+[ -f "$MSG_FILE" ] || exit 0
+
+# Git for Windows often ships with sed; fall back to no-op if missing.
+if command -v sed >/dev/null 2>&1; then
+  sed -i '/Co-authored-by:.*[Cc]ursor/d;/Made-with:.*[Cc]ursor/d;/cursoragent@cursor\.com/d' "$MSG_FILE" 2>/dev/null || true
+fi
+
+exit 0
