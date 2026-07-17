@@ -28,10 +28,10 @@
                         Height="72"
                         CornerRadius="12"
                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-                        <Image
-                            Source="ms-appx:///Assets/StoreLogo.png"
-                            Stretch="Uniform"
-                            Margin="10" />
+                            <Image
+                                Source="ms-appx:///Assets/Logo.png"
+                                Stretch="Uniform"
+                                Margin="4" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
                         <TextBlock x:Name="AppNameText" Style="{StaticResource SubtitleTextBlockStyle}" />

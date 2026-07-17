@@ -130,25 +130,33 @@ public sealed class UpdateService : IUpdateService
 
             progress?.Report(new UpdateProgress { Stage = "準備套用並重啟…", Percent = null });
             var scriptPath = Path.Combine(workRoot, "apply-and-restart.ps1");
-            await File.WriteAllTextAsync(scriptPath, BuildUpdaterScript(), Encoding.UTF8, cancellationToken)
+            var utf8Bom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+            await File.WriteAllTextAsync(scriptPath, BuildUpdaterScript(), utf8Bom, cancellationToken)
                 .ConfigureAwait(false);
+
+            // 用 cmd start 完全脫離，避免被目前行程拖住
+            var args =
+                $"-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"{scriptPath}\" " +
+                $"-TargetDir \"{targetDir}\" " +
+                $"-SourceDir \"{payloadDir}\" " +
+                $"-ExeName \"{exeName}\" " +
+                $"-ProcessId {Environment.ProcessId}";
 
             var psi = new ProcessStartInfo
             {
-                FileName = "powershell.exe",
-                Arguments =
-                    $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" " +
-                    $"-TargetDir \"{targetDir}\" " +
-                    $"-SourceDir \"{payloadDir}\" " +
-                    $"-ExeName \"{exeName}\" " +
-                    $"-ProcessId {Environment.ProcessId}",
+                FileName = "cmd.exe",
+                Arguments = $"/c start \"YangBaoUpdater\" /min powershell.exe {args}",
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
 
-            Process.Start(psi);
+            if (Process.Start(psi) is null)
+            {
+                throw new InvalidOperationException("無法啟動更新程式。");
+            }
+
             progress?.Report(new UpdateProgress { Stage = "即將重啟…", Percent = 100 });
-            App.Current.Exit();
+            // 不在這裡 Exit：交由 UI 關閉對話框後 Environment.Exit
         }
         catch
         {
@@ -231,10 +239,31 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$log = Join-Path $env:TEMP 'YangBaoUpdate.log'
+function Write-Log([string]$msg) {
+  $line = "[{0}] {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $msg
+  Add-Content -LiteralPath $log -Value $line -Encoding UTF8
+}
+
 try {
+  Write-Log "Updater start. pid=$ProcessId target=$TargetDir source=$SourceDir"
+
+  # 等主程式自行結束；超時則強制結束
   $proc = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
   if ($null -ne $proc) {
-    Wait-Process -Id $ProcessId -Timeout 60 -ErrorAction SilentlyContinue
+    try {
+      Wait-Process -Id $ProcessId -Timeout 15 -ErrorAction Stop
+      Write-Log "Process exited gracefully."
+    } catch {
+      Write-Log "Wait timed out; force stopping pid=$ProcessId"
+      Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
+      Start-Sleep -Seconds 1
+    }
+  }
+
+  Get-Process -Name 'WwLauncher' -ErrorAction SilentlyContinue | ForEach-Object {
+    Write-Log "Force stopping leftover WwLauncher pid=$($_.Id)"
+    Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
   }
   Start-Sleep -Seconds 1
 
@@ -245,8 +274,10 @@ try {
     New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
   }
 
-  & robocopy $SourceDir $TargetDir /E /IS /IT /R:2 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null
+  Write-Log "Copying files..."
+  & robocopy $SourceDir $TargetDir /E /IS /IT /R:5 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null
   $code = $LASTEXITCODE
+  Write-Log "robocopy exit=$code"
   if ($code -ge 8) {
     throw "robocopy failed with code $code"
   }
@@ -256,11 +287,13 @@ try {
     throw "Updated exe missing: $exePath"
   }
 
+  Write-Log "Starting $exePath"
   Start-Process -FilePath $exePath -WorkingDirectory $TargetDir
+  Write-Log "Updater done."
 }
 catch {
-  $log = Join-Path $env:TEMP 'YangBaoUpdate-error.log'
-  $_ | Out-File -FilePath $log -Encoding utf8
+  Write-Log ("ERROR: " + $_)
+  $_ | Out-File -FilePath (Join-Path $env:TEMP 'YangBaoUpdate-error.log') -Encoding utf8
 }
 """;
 

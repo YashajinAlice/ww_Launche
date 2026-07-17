@@ -21,7 +21,15 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            AppWindow.SetIcon("Assets/StoreLogo.png");
+            var ico = Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico");
+            if (File.Exists(ico))
+            {
+                AppWindow.SetIcon(ico);
+            }
+            else
+            {
+                AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "StoreLogo.png"));
+            }
         }
         catch
         {

@@ -24,7 +24,11 @@
             IsBackButtonEnabled="False"
             BackRequested="AppTitleBar_BackRequested"
             IsPaneToggleButtonVisible="True"
-            PaneToggleRequested="AppTitleBar_PaneToggleRequested" />
+            PaneToggleRequested="AppTitleBar_PaneToggleRequested">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="ms-appx:///Assets/Logo.png" />
+            </TitleBar.IconSource>
+        </TitleBar>
 
         <NavigationView
             x:Name="RootNav"

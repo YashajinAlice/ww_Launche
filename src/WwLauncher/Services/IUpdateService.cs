@@ -7,7 +7,7 @@ public interface IUpdateService
     Task<UpdateCheckResult> CheckForUpdatesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 下載更新包、寫入套用腳本、結束目前行程並由腳本重啟。
+    /// 下載更新包並啟動外部套用腳本。呼叫端應接著關閉 UI 並 Environment.Exit。
     /// downloadUrl 須為 zip（內含 WwLauncher.exe 等發佈檔）。
     /// </summary>
     Task ApplyUpdateAndRestartAsync(

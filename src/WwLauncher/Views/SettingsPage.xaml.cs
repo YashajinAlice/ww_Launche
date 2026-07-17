@@ -196,11 +196,32 @@ public sealed partial class SettingsPage : Page
         try
         {
             await App.Current.UpdateService.ApplyUpdateAndRestartAsync(manifest, progress);
-            // 正常會 Exit，不會走到這
+
+            statusText.Text = "即將重啟…";
+            try
+            {
+                progressDialog.Hide();
+            }
+            catch
+            {
+                // ignore
+            }
+
+            // 強制結束，讓更新腳本可以覆蓋檔案並重啟
+            await Task.Delay(400);
+            Environment.Exit(0);
         }
         catch (Exception ex)
         {
-            progressDialog.Hide();
+            try
+            {
+                progressDialog.Hide();
+            }
+            catch
+            {
+                // ignore
+            }
+
             UpdateStatusText.Text = "更新失敗";
             await ShowSimpleDialogAsync("更新失敗", ex.Message);
         }
