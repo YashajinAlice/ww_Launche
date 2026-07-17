@@ -1,9 +1,9 @@
 {
   "product": "秧寶",
   "version": "0.2.0",
-  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche",
+  "downloadUrl": "https://raw.githubusercontent.com/YashajinAlice/ww_Launche/main/docs/releases/YangBao-0.2.0-win-x64.zip",
   "sha256": "",
   "mandatory": false,
-  "releaseNotes": "檢查更新測試：遠端清單 0.2.0（本機目前 0.1.0）。點「開啟更新頁」可進入下載／倉庫頁。",
-  "publishedAt": "2026-07-17T23:30:00+08:00"
+  "releaseNotes": "自動更新測試：確認後會下載更新包、覆蓋檔案並重啟。包含設定頁檢查更新對話框與自我更新流程。",
+  "publishedAt": "2026-07-17T23:40:00+08:00"
 }

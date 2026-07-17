@@ -43,6 +43,13 @@ project.fragment.lock.json
 artifacts/
 
 ##
+## Update packages (keep zip only)
+##
+docs/releases/*/
+!docs/releases/*.zip
+!docs/releases/.gitkeep
+
+##
 ## OS / IDE
 ##
 .DS_Store

@@ -1,14 +1,15 @@
+using System.Diagnostics;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using WwLauncher.Models;
 
 namespace WwLauncher.Services;
 
 /// <summary>
-/// 版本檢查：
-/// 1) 遠端 JSON（預設 GitHub docs/update-manifest.json，可用 WW_LAUNCHER_UPDATE_URL 覆寫）
-/// 2) 遠端失敗時回退本機 update-manifest.sample.json
+/// 版本檢查與自動更新（下載 zip → 外部腳本覆蓋 → 重啟）。
 /// </summary>
 public sealed class UpdateService : IUpdateService
 {
@@ -23,10 +24,8 @@ public sealed class UpdateService : IUpdateService
 
     public UpdateService(HttpClient? httpClient = null)
     {
-        _httpClient = httpClient ?? new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(15),
-        };
+        _httpClient = httpClient ?? new HttpClient();
+        _httpClient.Timeout = TimeSpan.FromMinutes(10);
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"YangBao/{GetCurrentVersion()}");
@@ -96,6 +95,174 @@ public sealed class UpdateService : IUpdateService
             Manifest = manifest,
         };
     }
+
+    public async Task ApplyUpdateAndRestartAsync(
+        UpdateManifest manifest,
+        IProgress<UpdateProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.DownloadUrl))
+        {
+            throw new InvalidOperationException("更新清單缺少 downloadUrl。");
+        }
+
+        var workRoot = Path.Combine(Path.GetTempPath(), "YangBaoUpdate", Guid.NewGuid().ToString("N"));
+        var zipPath = Path.Combine(workRoot, "package.zip");
+        var extractDir = Path.Combine(workRoot, "extract");
+        Directory.CreateDirectory(extractDir);
+
+        try
+        {
+            progress?.Report(new UpdateProgress { Stage = "正在下載更新…", Percent = 0 });
+            await DownloadFileAsync(manifest.DownloadUrl, zipPath, progress, cancellationToken)
+                .ConfigureAwait(false);
+
+            progress?.Report(new UpdateProgress { Stage = "正在解壓…", Percent = null });
+            ZipFile.ExtractToDirectory(zipPath, extractDir, overwriteFiles: true);
+
+            var payloadDir = FindPayloadDirectory(extractDir);
+            var exeInPayload = Directory.EnumerateFiles(payloadDir, "WwLauncher.exe", SearchOption.AllDirectories).FirstOrDefault()
+                ?? throw new InvalidOperationException("更新包內找不到 WwLauncher.exe。");
+            payloadDir = Path.GetDirectoryName(exeInPayload)!;
+
+            var targetDir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            const string exeName = "WwLauncher.exe";
+
+            progress?.Report(new UpdateProgress { Stage = "準備套用並重啟…", Percent = null });
+            var scriptPath = Path.Combine(workRoot, "apply-and-restart.ps1");
+            await File.WriteAllTextAsync(scriptPath, BuildUpdaterScript(), Encoding.UTF8, cancellationToken)
+                .ConfigureAwait(false);
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments =
+                    $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" " +
+                    $"-TargetDir \"{targetDir}\" " +
+                    $"-SourceDir \"{payloadDir}\" " +
+                    $"-ExeName \"{exeName}\" " +
+                    $"-ProcessId {Environment.ProcessId}",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+            Process.Start(psi);
+            progress?.Report(new UpdateProgress { Stage = "即將重啟…", Percent = 100 });
+            App.Current.Exit();
+        }
+        catch
+        {
+            try
+            {
+                if (Directory.Exists(workRoot))
+                {
+                    Directory.Delete(workRoot, recursive: true);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            throw;
+        }
+    }
+
+    private async Task DownloadFileAsync(
+        string url,
+        string destinationPath,
+        IProgress<UpdateProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+
+        using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+        if (contentType.Contains("text/html", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "下載位址不是更新包（收到 HTML）。請將 downloadUrl 設為 zip 直連。");
+        }
+
+        var total = response.Content.Headers.ContentLength;
+        await using var remote = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using var local = File.Create(destinationPath);
+
+        var buffer = new byte[81920];
+        long readTotal = 0;
+        int read;
+        while ((read = await remote.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)
+                   .ConfigureAwait(false)) > 0)
+        {
+            await local.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+            readTotal += read;
+            if (total is > 0)
+            {
+                progress?.Report(new UpdateProgress
+                {
+                    Stage = "正在下載更新…",
+                    Percent = Math.Round(readTotal * 100.0 / total.Value, 1),
+                });
+            }
+        }
+    }
+
+    private static string FindPayloadDirectory(string extractDir)
+    {
+        var dirs = Directory.GetDirectories(extractDir);
+        var files = Directory.GetFiles(extractDir);
+        if (files.Length == 0 && dirs.Length == 1)
+        {
+            return dirs[0];
+        }
+
+        return extractDir;
+    }
+
+    private static string BuildUpdaterScript() => """
+param(
+  [Parameter(Mandatory = $true)][string]$TargetDir,
+  [Parameter(Mandatory = $true)][string]$SourceDir,
+  [Parameter(Mandatory = $true)][string]$ExeName,
+  [Parameter(Mandatory = $true)][int]$ProcessId
+)
+
+$ErrorActionPreference = 'Stop'
+try {
+  $proc = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+  if ($null -ne $proc) {
+    Wait-Process -Id $ProcessId -Timeout 60 -ErrorAction SilentlyContinue
+  }
+  Start-Sleep -Seconds 1
+
+  if (-not (Test-Path -LiteralPath $SourceDir)) {
+    throw "Source not found: $SourceDir"
+  }
+  if (-not (Test-Path -LiteralPath $TargetDir)) {
+    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+  }
+
+  & robocopy $SourceDir $TargetDir /E /IS /IT /R:2 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null
+  $code = $LASTEXITCODE
+  if ($code -ge 8) {
+    throw "robocopy failed with code $code"
+  }
+
+  $exePath = Join-Path $TargetDir $ExeName
+  if (-not (Test-Path -LiteralPath $exePath)) {
+    throw "Updated exe missing: $exePath"
+  }
+
+  Start-Process -FilePath $exePath -WorkingDirectory $TargetDir
+}
+catch {
+  $log = Join-Path $env:TEMP 'YangBaoUpdate-error.log'
+  $_ | Out-File -FilePath $log -Encoding utf8
+}
+""";
 
     private async Task<UpdateManifest?> LoadRemoteManifestAsync(string url, CancellationToken cancellationToken)
     {
