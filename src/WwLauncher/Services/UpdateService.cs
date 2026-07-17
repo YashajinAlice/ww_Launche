@@ -6,9 +6,9 @@ using WwLauncher.Models;
 namespace WwLauncher.Services;
 
 /// <summary>
-/// 版本檢查骨架：
-/// 1) 若設定了環境變數 WW_LAUNCHER_UPDATE_URL，則從遠端 JSON 讀取
-/// 2) 否則讀取輸出目錄中的 update-manifest.sample.json（本機開發用）
+/// 版本檢查：
+/// 1) 遠端 JSON（預設 GitHub docs/update-manifest.json，可用 WW_LAUNCHER_UPDATE_URL 覆寫）
+/// 2) 遠端失敗時回退本機 update-manifest.sample.json
 /// </summary>
 public sealed class UpdateService : IUpdateService
 {
@@ -27,19 +27,36 @@ public sealed class UpdateService : IUpdateService
         {
             Timeout = TimeSpan.FromSeconds(15),
         };
+        if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
+        {
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"YangBao/{GetCurrentVersion()}");
+        }
     }
 
     public async Task<UpdateCheckResult> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
     {
         var current = GetCurrentVersion();
-        var manifest = await LoadManifestAsync(cancellationToken).ConfigureAwait(false);
+        string? source = null;
+        UpdateManifest? manifest;
+
+        try
+        {
+            manifest = await LoadRemoteManifestAsync(LauncherConfig.UpdateManifestUrl, cancellationToken)
+                .ConfigureAwait(false);
+            source = LauncherConfig.UpdateManifestUrl;
+        }
+        catch
+        {
+            manifest = await LoadLocalSampleAsync(cancellationToken).ConfigureAwait(false);
+            source = "local:update-manifest.sample.json";
+        }
 
         if (manifest is null)
         {
             return new UpdateCheckResult
             {
                 HasUpdate = false,
-                Message = "找不到更新清單。可設定環境變數 WW_LAUNCHER_UPDATE_URL，或使用本機 update-manifest.sample.json。",
+                Message = $"找不到更新清單。已嘗試：{LauncherConfig.UpdateManifestUrl}",
             };
         }
 
@@ -53,17 +70,21 @@ public sealed class UpdateService : IUpdateService
             return new UpdateCheckResult
             {
                 HasUpdate = false,
-                Message = $"更新清單版本格式無效：{manifest.Version}",
+                Message = $"更新清單版本格式無效：{manifest.Version}（來源：{source}）",
                 Manifest = manifest,
             };
         }
 
         if (remoteVersion > currentVersion)
         {
+            var notes = string.IsNullOrWhiteSpace(manifest.ReleaseNotes)
+                ? string.Empty
+                : $"\n說明：{manifest.ReleaseNotes}";
+
             return new UpdateCheckResult
             {
                 HasUpdate = true,
-                Message = $"發現新版本 {manifest.Version}（目前 {current}）。下載與套用流程尚未實作。",
+                Message = $"發現新版本 {manifest.Version}（目前 {current}）。{notes}",
                 Manifest = manifest,
             };
         }
@@ -76,18 +97,17 @@ public sealed class UpdateService : IUpdateService
         };
     }
 
-    private async Task<UpdateManifest?> LoadManifestAsync(CancellationToken cancellationToken)
+    private async Task<UpdateManifest?> LoadRemoteManifestAsync(string url, CancellationToken cancellationToken)
     {
-        var remoteUrl = Environment.GetEnvironmentVariable("WW_LAUNCHER_UPDATE_URL");
-        if (!string.IsNullOrWhiteSpace(remoteUrl))
-        {
-            using var response = await _httpClient.GetAsync(remoteUrl, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<UpdateManifest>(stream, JsonOptions, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await JsonSerializer.DeserializeAsync<UpdateManifest>(stream, JsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
 
+    private static async Task<UpdateManifest?> LoadLocalSampleAsync(CancellationToken cancellationToken)
+    {
         var localPath = Path.Combine(AppContext.BaseDirectory, "update-manifest.sample.json");
         if (!File.Exists(localPath))
         {
@@ -111,7 +131,6 @@ public sealed class UpdateService : IUpdateService
 
     private static string NormalizeVersion(string version)
     {
-        // 允許 0.1.0-beta 這類字串，只取數字段比較
         var core = version.Split('-', '+')[0].Trim();
         var parts = core.Split('.');
         while (parts.Length < 3)

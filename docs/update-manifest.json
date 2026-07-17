@@ -1,9 +1,9 @@
 {
   "product": "秧寶",
   "version": "0.2.0",
-  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche/releases/latest",
+  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche",
   "sha256": "",
   "mandatory": false,
-  "releaseNotes": "遠端測試清單：設定環境變數 WW_LAUNCHER_UPDATE_URL 指向此檔 raw 網址。",
-  "publishedAt": "2026-07-17T23:00:00+08:00"
+  "releaseNotes": "檢查更新測試：遠端清單 0.2.0（本機目前 0.1.0）。點「開啟更新頁」可進入下載／倉庫頁。",
+  "publishedAt": "2026-07-17T23:30:00+08:00"
 }

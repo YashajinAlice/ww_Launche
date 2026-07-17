@@ -1,9 +1,9 @@
 {
   "product": "秧寶",
   "version": "0.2.0",
-  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche/releases/latest",
+  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche",
   "sha256": "",
   "mandatory": false,
-  "releaseNotes": "測試用：本機 sample 高於 0.1.0，設定頁「檢查更新」應會顯示有可用更新。",
-  "publishedAt": "2026-07-17T23:00:00+08:00"
+  "releaseNotes": "本機 fallback 清單（遠端失敗時使用）。",
+  "publishedAt": "2026-07-17T23:30:00+08:00"
 }

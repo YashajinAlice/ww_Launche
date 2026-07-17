@@ -1,11 +1,13 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WwLauncher.Models;
 
 namespace WwLauncher.Views;
 
 public sealed partial class SettingsPage : Page
 {
     private bool _ready;
+    private UpdateManifest? _latestManifest;
 
     public SettingsPage()
     {
@@ -54,17 +56,27 @@ public sealed partial class SettingsPage : Page
     private async void CheckUpdateButton_Click(object sender, RoutedEventArgs e)
     {
         CheckUpdateButton.IsEnabled = false;
+        OpenUpdatePageButton.Visibility = Visibility.Collapsed;
+        _latestManifest = null;
         UpdateStatusBar.IsOpen = true;
         UpdateStatusBar.Severity = InfoBarSeverity.Informational;
         UpdateStatusBar.Title = "檢查中";
-        UpdateStatusBar.Message = "正在比對版本…";
+        UpdateStatusBar.Message = $"正在讀取：{LauncherConfig.UpdateManifestUrl}";
 
         try
         {
             var result = await App.Current.UpdateService.CheckForUpdatesAsync();
+            _latestManifest = result.Manifest;
             UpdateStatusBar.Severity = result.HasUpdate ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
             UpdateStatusBar.Title = result.HasUpdate ? "有可用更新" : "沒有更新";
-            UpdateStatusBar.Message = result.Message;
+            UpdateStatusBar.Message = result.Message.Trim();
+
+            if (result.HasUpdate
+                && result.Manifest is not null
+                && !string.IsNullOrWhiteSpace(result.Manifest.DownloadUrl))
+            {
+                OpenUpdatePageButton.Visibility = Visibility.Visible;
+            }
         }
         catch (Exception ex)
         {
@@ -76,6 +88,17 @@ public sealed partial class SettingsPage : Page
         {
             CheckUpdateButton.IsEnabled = true;
         }
+    }
+
+    private async void OpenUpdatePageButton_Click(object sender, RoutedEventArgs e)
+    {
+        var url = _latestManifest?.DownloadUrl;
+        if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            return;
+        }
+
+        await Windows.System.Launcher.LaunchUriAsync(uri);
     }
 
     private async void BrowseGamePath_Click(object sender, RoutedEventArgs e)

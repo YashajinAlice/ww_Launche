@@ -46,6 +46,11 @@
                                     Content="檢查更新"
                                     Style="{StaticResource AccentButtonStyle}"
                                     Click="CheckUpdateButton_Click" />
+                                <Button
+                                    x:Name="OpenUpdatePageButton"
+                                    Content="開啟更新頁"
+                                    Visibility="Collapsed"
+                                    Click="OpenUpdatePageButton_Click" />
                             </StackPanel>
                         </StackPanel>
                     </Grid>
