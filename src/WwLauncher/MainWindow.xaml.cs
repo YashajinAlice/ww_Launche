@@ -1,57 +1,85 @@
-using System.Reflection;
 using Microsoft.UI.Xaml;
-using WwLauncher.Services;
+using Microsoft.UI.Xaml.Controls;
+using WwLauncher.Views;
 
 namespace WwLauncher;
 
 public sealed partial class MainWindow : Window
 {
-    private readonly IUpdateService _updateService = new UpdateService();
-
     public MainWindow()
     {
         InitializeComponent();
-        ExtendsContentIntoTitleBar = false;
+        WindowHelper.Track(this);
 
-        var version = Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion
-            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-            ?? "0.0.0";
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
 
-        VersionText.Text = $"目前版本：{version}";
-        StatusText.Text = "啟動器骨架就緒。之後可在此接遊戲啟動與更新流程。";
-    }
-
-    private async void CheckUpdateButton_Click(object sender, RoutedEventArgs e)
-    {
-        CheckUpdateButton.IsEnabled = false;
-        UpdateProgress.Visibility = Visibility.Visible;
-        UpdateProgress.IsIndeterminate = true;
-        StatusText.Text = "正在檢查更新…";
+        AppWindow.Resize(new Windows.Graphics.SizeInt32(1120, 720));
 
         try
         {
-            var result = await _updateService.CheckForUpdatesAsync();
-            StatusText.Text = result.Message;
+            AppWindow.SetIcon("Assets/StoreLogo.png");
+        }
+        catch
+        {
+            // 圖示缺失時略過，不影響啟動
+        }
+    }
 
-            if (result.HasUpdate && result.Manifest is not null)
+    private void RootNav_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (RootNav.MenuItems.Count > 0 && RootNav.MenuItems[0] is NavigationViewItem home)
+        {
+            RootNav.SelectedItem = home;
+        }
+    }
+
+    private void AppTitleBar_PaneToggleRequested(TitleBar sender, object args)
+    {
+        RootNav.IsPaneOpen = !RootNav.IsPaneOpen;
+    }
+
+    private void RootNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        if (args.IsSettingsSelected)
+        {
+            ContentFrame.Navigate(typeof(SettingsPage));
+            AppTitleBar.Subtitle = "設定";
+            return;
+        }
+
+        if (args.SelectedItem is not NavigationViewItem item || item.Tag is not string tag)
+        {
+            return;
+        }
+
+        NavigateTag(tag);
+    }
+
+    public void NavigateTo(string tag)
+    {
+        foreach (var menuItem in RootNav.MenuItems)
+        {
+            if (menuItem is NavigationViewItem item && item.Tag as string == tag)
             {
-                StatusText.Text +=
-                    $"{Environment.NewLine}遠端版本：{result.Manifest.Version}" +
-                    $"{Environment.NewLine}下載網址：{result.Manifest.DownloadUrl}" +
-                    $"{Environment.NewLine}說明：{result.Manifest.ReleaseNotes ?? "（無）"}";
+                RootNav.SelectedItem = item;
+                return;
             }
         }
-        catch (Exception ex)
+    }
+
+    private void NavigateTag(string tag)
+    {
+        switch (tag)
         {
-            StatusText.Text = $"檢查更新失敗：{ex.Message}";
-        }
-        finally
-        {
-            UpdateProgress.IsIndeterminate = false;
-            UpdateProgress.Visibility = Visibility.Collapsed;
-            CheckUpdateButton.IsEnabled = true;
+            case "home":
+                ContentFrame.Navigate(typeof(HomePage));
+                AppTitleBar.Subtitle = "首頁";
+                break;
+            case "updates":
+                ContentFrame.Navigate(typeof(UpdatesPage));
+                AppTitleBar.Subtitle = "更新";
+                break;
         }
     }
 }
