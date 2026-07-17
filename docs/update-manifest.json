@@ -1,9 +1,9 @@
 {
   "product": "秧寶",
   "version": "0.2.2",
-  "downloadUrl": "https://raw.githubusercontent.com/YashajinAlice/ww_Launche/main/docs/releases/YangBao-0.2.2-win-x64.zip",
+  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche/releases/download/v0.2.2/YangBao-0.2.2-win-x64.zip",
   "sha256": "",
   "mandatory": false,
-  "releaseNotes": "修正標題列「秧寶」顯示；更新清單避開 CDN 快取；設定頁 Logo 維持檔案路徑載入。",
-  "publishedAt": "2026-07-18T00:05:00+08:00"
+  "releaseNotes": "修正標題列「秧寶」顯示；新增繁中安裝檔；更新清單改走 GitHub Releases。",
+  "publishedAt": "2026-07-18T00:10:00+08:00"
 }

@@ -43,10 +43,12 @@ project.fragment.lock.json
 artifacts/
 
 ##
-## Update packages (keep zip only)
+## Update packages / installers (keep zip + Setup exe)
 ##
 docs/releases/*/
 !docs/releases/*.zip
+!docs/releases/*Setup*.exe
+!docs/releases/YangBao-Setup-*.exe
 !docs/releases/.gitkeep
 
 ##

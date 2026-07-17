@@ -15,6 +15,28 @@ dotnet build WwLauncher.sln -c Debug -p:Platform=x64
 dotnet run --project src\WwLauncher\WwLauncher.csproj -c Debug -p:Platform=x64
 ```
 
+## 安裝檔（Inno Setup）
+
+安裝精靈為**繁體中文**：使用權政策、安裝路徑、是否建立捷徑（桌面／開始功能表）。
+
+```powershell
+# 需已安裝 Inno Setup 6+，或加上 -InstallInnoIfMissing
+.\scripts\build-installer.ps1
+# 輸出：docs\releases\YangBao-Setup-{版本}-win-x64.exe
+```
+
+## 發佈到 GitHub Releases
+
+每個版本請上 Releases（安裝檔 + zip 更新包）：
+
+```powershell
+.\scripts\publish-release.ps1
+# 或略過重建：.\scripts\publish-release.ps1 -SkipBuild
+```
+
+`docs/update-manifest.json` 的 `downloadUrl` 應指向  
+`https://github.com/YashajinAlice/ww_Launche/releases/download/v{版本}/...`
+
 ## UI
 
 | 頁面 | 說明 |
