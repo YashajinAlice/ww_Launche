@@ -1,9 +1,9 @@
 {
   "product": "秧寶",
-  "version": "0.2.6",
-  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche/releases/download/v0.2.6/YangBao-0.2.6-win-x64.zip",
+  "version": "0.2.7",
+  "downloadUrl": "https://github.com/YashajinAlice/ww_Launche/releases/download/v0.2.7/YangBao-0.2.7-win-x64.zip",
   "sha256": "",
   "mandatory": false,
-  "releaseNotes": "版本 0.2.6",
-  "publishedAt": "2026-07-18T01:07:05+08:00"
+  "releaseNotes": "版本 0.2.7",
+  "publishedAt": "2026-07-18T01:15:23+08:00"
 }
