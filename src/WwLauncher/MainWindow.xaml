@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="WW Launcher">
+    Title="秧寶">
 
     <Window.SystemBackdrop>
         <MicaBackdrop Kind="Base" />
@@ -18,25 +18,20 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- WinUI Gallery：TitleBar + NavigationView L-Pattern -->
         <TitleBar
             x:Name="AppTitleBar"
-            Title="WW Launcher"
-            Subtitle="Launcher"
-            IsBackButtonVisible="False"
+            IsBackButtonVisible="True"
+            IsBackButtonEnabled="False"
+            BackRequested="AppTitleBar_BackRequested"
             IsPaneToggleButtonVisible="True"
-            PaneToggleRequested="AppTitleBar_PaneToggleRequested">
-            <TitleBar.IconSource>
-                <FontIconSource Glyph="&#xE7FC;" FontSize="16" />
-            </TitleBar.IconSource>
-        </TitleBar>
+            PaneToggleRequested="AppTitleBar_PaneToggleRequested" />
 
         <NavigationView
             x:Name="RootNav"
             Grid.Row="1"
             IsBackButtonVisible="Collapsed"
             IsPaneToggleButtonVisible="False"
-            IsSettingsVisible="True"
+            IsSettingsVisible="False"
             OpenPaneLength="260"
             PaneDisplayMode="Left"
             IsTitleBarAutoPaddingEnabled="False"
@@ -46,6 +41,8 @@
             <NavigationView.Resources>
                 <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
                 <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+                <!-- 選中指示條：對齊參考的紫色強調 -->
+                <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="#FF9B6DFF" />
             </NavigationView.Resources>
 
             <NavigationView.MenuItems>
@@ -54,14 +51,39 @@
                         <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="更新" Tag="updates">
+                <NavigationViewItem Content="角色分析" Tag="character">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE895;" />
+                        <FontIcon Glyph="&#xE77B;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="抽卡記錄" Tag="gacha">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8CB;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="WIKI" Tag="wiki">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE82D;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="數據終端" Tag="terminal">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D9;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <Frame x:Name="ContentFrame" />
+            <!-- 底部：設定（參考側欄底部齒輪項） -->
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItemSeparator />
+                <NavigationViewItem Content="設定" Tag="settings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
+
+            <Frame x:Name="ContentFrame" Navigated="ContentFrame_Navigated" />
         </NavigationView>
     </Grid>
 </Window>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WwLauncher.Views.CharacterAnalysisPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Enabled">
+
+    <ScrollViewer Padding="36,24,36,36">
+        <StackPanel MaxWidth="960" Spacing="20" HorizontalAlignment="Left">
+            <StackPanel Spacing="8">
+                <TextBlock Text="角色分析" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock
+                    Text="欄位骨架：之後接 bot 面板 / 聲骸評分 API。"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Opacity="0.8"
+                    TextWrapping="WrapWholeWords" />
+            </StackPanel>
+
+            <Border Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="查詢條件" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBox x:Name="UidBox" Header="UID" PlaceholderText="遊戲 UID" />
+                    <ComboBox x:Name="CharacterCombo" Header="角色" PlaceholderText="選擇角色" HorizontalAlignment="Stretch" IsEnabled="False" />
+                    <ComboBox x:Name="ServerCombo" Header="伺服器" HorizontalAlignment="Stretch" SelectedIndex="0">
+                        <ComboBoxItem Content="國際服" Tag="overseas" />
+                        <ComboBoxItem Content="國服" Tag="cn" />
+                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="載入角色" Style="{StaticResource AccentButtonStyle}" IsEnabled="False" />
+                        <Button Content="重新整理" IsEnabled="False" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="分析結果" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBox Header="總分" IsReadOnly="True" PlaceholderText="—" />
+                    <TextBox Header="評級" IsReadOnly="True" PlaceholderText="—" />
+                    <TextBox Header="武器" IsReadOnly="True" PlaceholderText="—" />
+                    <TextBox Header="聲骸摘要" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" PlaceholderText="尚未載入" />
+                    <TextBox Header="備註" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" PlaceholderText="—" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

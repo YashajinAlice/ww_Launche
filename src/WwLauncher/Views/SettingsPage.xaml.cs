@@ -10,12 +10,17 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
-        AboutVersionText.Text = $"WW Launcher {App.Current.AppVersion}";
 
-        ThemeRadioButtons.SelectedIndex = App.Current.RequestedTheme switch
+        AppNameText.Text = App.AppDisplayName;
+        AuthorText.Text = $"作者：{App.AppAuthor}";
+        VersionText.Text = $"版本 {App.Current.AppVersion}";
+        GamePathBox.Text = App.Current.Settings.GamePath;
+
+        var theme = App.Current.Settings.Theme;
+        ThemeRadioButtons.SelectedIndex = theme switch
         {
-            ApplicationTheme.Light => 1,
-            ApplicationTheme.Dark => 2,
+            "Light" => 1,
+            "Dark" => 2,
             _ => 0,
         };
 
@@ -29,7 +34,7 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        // Application.RequestedTheme 只能在啟動前設；執行期改根元素 ElementTheme
+        App.Current.Settings.Theme = tag;
         var theme = tag switch
         {
             "Light" => ElementTheme.Light,
@@ -44,5 +49,62 @@ public sealed partial class SettingsPage : Page
                 root.RequestedTheme = theme;
             }
         }
+    }
+
+    private async void CheckUpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        CheckUpdateButton.IsEnabled = false;
+        UpdateStatusBar.IsOpen = true;
+        UpdateStatusBar.Severity = InfoBarSeverity.Informational;
+        UpdateStatusBar.Title = "檢查中";
+        UpdateStatusBar.Message = "正在比對版本…";
+
+        try
+        {
+            var result = await App.Current.UpdateService.CheckForUpdatesAsync();
+            UpdateStatusBar.Severity = result.HasUpdate ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
+            UpdateStatusBar.Title = result.HasUpdate ? "有可用更新" : "沒有更新";
+            UpdateStatusBar.Message = result.Message;
+        }
+        catch (Exception ex)
+        {
+            UpdateStatusBar.Severity = InfoBarSeverity.Error;
+            UpdateStatusBar.Title = "檢查失敗";
+            UpdateStatusBar.Message = ex.Message;
+        }
+        finally
+        {
+            CheckUpdateButton.IsEnabled = true;
+        }
+    }
+
+    private async void BrowseGamePath_Click(object sender, RoutedEventArgs e)
+    {
+        Window? host = null;
+        foreach (var window in WindowHelper.ActiveWindows)
+        {
+            if (window is MainWindow)
+            {
+                host = window;
+                break;
+            }
+        }
+
+        if (host is null)
+        {
+            return;
+        }
+
+        var path = await App.Current.Settings.PickGameExecutableAsync(host);
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            GamePathBox.Text = path;
+        }
+    }
+
+    private void ClearGamePath_Click(object sender, RoutedEventArgs e)
+    {
+        App.Current.Settings.GamePath = string.Empty;
+        GamePathBox.Text = string.Empty;
     }
 }

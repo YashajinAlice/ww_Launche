@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WwLauncher.Views.GachaHistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Enabled">
+
+    <ScrollViewer Padding="36,24,36,36">
+        <StackPanel MaxWidth="960" Spacing="20" HorizontalAlignment="Left">
+            <StackPanel Spacing="8">
+                <TextBlock Text="抽卡記錄" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock
+                    Text="欄位骨架：之後接 bot /api/gacha/upload 與本地記錄匯入。"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Opacity="0.8"
+                    TextWrapping="WrapWholeWords" />
+            </StackPanel>
+
+            <Border Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="匯入" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBox x:Name="GachaUrlBox" Header="抽卡記錄 URL" PlaceholderText="貼上遊戲抽卡記錄連結" />
+                    <TextBox x:Name="GachaUidBox" Header="UID（可選）" PlaceholderText="綁定帳號時使用" />
+                    <ComboBox Header="卡池類型" HorizontalAlignment="Stretch" SelectedIndex="0">
+                        <ComboBoxItem Content="全部" />
+                        <ComboBoxItem Content="角色活動" />
+                        <ComboBoxItem Content="武器活動" />
+                        <ComboBoxItem Content="常駐" />
+                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="匯入記錄" Style="{StaticResource AccentButtonStyle}" IsEnabled="False" />
+                        <Button Content="從本機匯入" IsEnabled="False" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="統計摘要" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                        <TextBox Header="總抽數" IsReadOnly="True" PlaceholderText="—" />
+                        <TextBox Grid.Column="1" Header="五星數" IsReadOnly="True" PlaceholderText="—" />
+                        <TextBox Grid.Column="2" Header="目前保底進度" IsReadOnly="True" PlaceholderText="—" />
+                    </Grid>
+                    <ListView Header="最近記錄" MinHeight="160" IsEnabled="False">
+                        <ListView.Items>
+                            <ListViewItem Content="（尚未匯入）" IsEnabled="False" />
+                        </ListView.Items>
+                    </ListView>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

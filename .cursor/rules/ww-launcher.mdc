@@ -5,9 +5,14 @@ alwaysApply: true
 
 # WW Launcher（ww_Launche）
 
-- 本倉庫是 **WW 啟動器**，技術棧固定為 **WinUI 3 + C#（Windows App SDK）**。
+- 本倉庫是 **秧寶** 啟動器（原 WW Launcher），技術棧固定為 **WinUI 3 + C#（Windows App SDK）**。
+- 標題列顯示：`秧寶 {四段版本}`（例：秧寶 0.1.0.0），樣式對齊返回 + 漢堡選單 + 名稱版本。
 - 目前為 **unpackaged**（`WindowsPackageType=None`），目標框架 `net8.0-windows10.0.19041.0`。
 - 預設平台 **x64**（亦支援 ARM64）；建置請用 `-p:Platform=x64`。
-- 版本更新：`Services/UpdateService` + `update-manifest.sample.json`；遠端用環境變數 `WW_LAUNCHER_UPDATE_URL`。
-- 下載安裝、遊戲啟動流程尚未接線；擴充時延續現有 Models/Services 分層，避免把邏輯塞進 XAML code-behind。
+- 導航：首頁、角色分析、抽卡記錄、WIKI、數據終端；底部 **設定**（齒輪，紫色選中指示）。
+- 設定頁：LOGO、軟件名稱、作者、版本、檢查更新、主題、遊戲路徑。
+- 首頁公告分「遊戲公告 / 作者公告」；皆經機器人 `GET /api/launcher/announcements`（作者公告 JSON 由 bot 維護，遊戲由 bot 代理 Kuro）。列表只顯示標題，不加 `[game]` 前綴。
+- Bot API 預設 `https://fulin-net.top`，可用環境變數 `WW_LAUNCHER_BOT_API` 覆寫。
+- 版本更新：`Services/UpdateService`；下載安裝、遊戲啟動尚未接線。
+- 擴充時延續 Models/Services 分層，避免把邏輯塞進 XAML code-behind。
 - 回覆使用者時使用**繁體中文**。

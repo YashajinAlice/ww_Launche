@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using WwLauncher.Views;
 
 namespace WwLauncher;
@@ -11,10 +12,12 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         WindowHelper.Track(this);
 
+        Title = App.AppDisplayName;
+        AppTitleBar.Title = App.Current.AppTitleWithVersion;
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
-
-        AppWindow.Resize(new Windows.Graphics.SizeInt32(1120, 720));
+        AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
 
         try
         {
@@ -22,7 +25,27 @@ public sealed partial class MainWindow : Window
         }
         catch
         {
-            // 圖示缺失時略過，不影響啟動
+            // ignore
+        }
+
+        ApplySavedTheme();
+    }
+
+    private static void ApplySavedTheme()
+    {
+        var theme = App.Current.Settings.Theme switch
+        {
+            "Light" => ElementTheme.Light,
+            "Dark" => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
+
+        foreach (var window in WindowHelper.ActiveWindows)
+        {
+            if (window.Content is FrameworkElement root)
+            {
+                root.RequestedTheme = theme;
+            }
         }
     }
 
@@ -39,15 +62,21 @@ public sealed partial class MainWindow : Window
         RootNav.IsPaneOpen = !RootNav.IsPaneOpen;
     }
 
+    private void AppTitleBar_BackRequested(TitleBar sender, object args)
+    {
+        if (ContentFrame.CanGoBack)
+        {
+            ContentFrame.GoBack();
+        }
+    }
+
+    private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+    {
+        AppTitleBar.IsBackButtonEnabled = ContentFrame.CanGoBack;
+    }
+
     private void RootNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (args.IsSettingsSelected)
-        {
-            ContentFrame.Navigate(typeof(SettingsPage));
-            AppTitleBar.Subtitle = "設定";
-            return;
-        }
-
         if (args.SelectedItem is not NavigationViewItem item || item.Tag is not string tag)
         {
             return;
@@ -58,7 +87,7 @@ public sealed partial class MainWindow : Window
 
     public void NavigateTo(string tag)
     {
-        foreach (var menuItem in RootNav.MenuItems)
+        foreach (var menuItem in RootNav.MenuItems.Concat(RootNav.FooterMenuItems))
         {
             if (menuItem is NavigationViewItem item && item.Tag as string == tag)
             {
@@ -70,15 +99,26 @@ public sealed partial class MainWindow : Window
 
     private void NavigateTag(string tag)
     {
+        // 標題列固定「秧寶 版本」，不隨頁面改 Subtitle
         switch (tag)
         {
             case "home":
                 ContentFrame.Navigate(typeof(HomePage));
-                AppTitleBar.Subtitle = "首頁";
                 break;
-            case "updates":
-                ContentFrame.Navigate(typeof(UpdatesPage));
-                AppTitleBar.Subtitle = "更新";
+            case "character":
+                ContentFrame.Navigate(typeof(CharacterAnalysisPage));
+                break;
+            case "gacha":
+                ContentFrame.Navigate(typeof(GachaHistoryPage));
+                break;
+            case "wiki":
+                ContentFrame.Navigate(typeof(WikiPage));
+                break;
+            case "terminal":
+                ContentFrame.Navigate(typeof(DataTerminalPage));
+                break;
+            case "settings":
+                ContentFrame.Navigate(typeof(SettingsPage));
                 break;
         }
     }

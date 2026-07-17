@@ -10,15 +10,23 @@ public partial class App : Application
 
     public static new App Current => (App)Application.Current;
 
+    public const string AppDisplayName = "秧寶";
+
+    public const string AppAuthor = "YashajinAlice";
+
     public IUpdateService UpdateService { get; } = new UpdateService();
 
+    public IAnnouncementService AnnouncementService { get; } = new AnnouncementService();
+
+    public AppSettingsService Settings { get; } = new();
+
+    /// <summary>四段式版本，標題列顯示用（例：0.1.0.0）。</summary>
     public string AppVersion { get; } =
-        Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion
-            ?.Split('+')[0]
-        ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
-        ?? "0.0.0";
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString()
+        ?? "0.0.0.0";
+
+    /// <summary>標題列文字：秧寶 0.1.0.0</summary>
+    public string AppTitleWithVersion => $"{AppDisplayName} {AppVersion}";
 
     public App()
     {

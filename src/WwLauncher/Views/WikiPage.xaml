@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WwLauncher.Views.WikiPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Enabled">
+
+    <ScrollViewer Padding="36,24,36,36">
+        <StackPanel MaxWidth="960" Spacing="20" HorizontalAlignment="Left">
+            <StackPanel Spacing="8">
+                <TextBlock Text="WIKI" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock
+                    Text="欄位骨架：之後接靜態資料 / 角色・武器・聲骸圖鑑。"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Opacity="0.8"
+                    TextWrapping="WrapWholeWords" />
+            </StackPanel>
+
+            <Border Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="搜尋" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <AutoSuggestBox Header="關鍵字" PlaceholderText="角色、武器、聲骸…" QueryIcon="Find" IsEnabled="False" />
+                    <ComboBox Header="分類" HorizontalAlignment="Stretch" SelectedIndex="0">
+                        <ComboBoxItem Content="全部" />
+                        <ComboBoxItem Content="角色" />
+                        <ComboBoxItem Content="武器" />
+                        <ComboBoxItem Content="聲骸" />
+                        <ComboBoxItem Content="合鳴" />
+                    </ComboBox>
+                    <ComboBox Header="屬性" HorizontalAlignment="Stretch" SelectedIndex="0">
+                        <ComboBoxItem Content="全部" />
+                        <ComboBoxItem Content="冷凝" />
+                        <ComboBoxItem Content="熱熔" />
+                        <ComboBoxItem Content="導電" />
+                        <ComboBoxItem Content="氣動" />
+                        <ComboBoxItem Content="衍射" />
+                        <ComboBoxItem Content="湮滅" />
+                    </ComboBox>
+                </StackPanel>
+            </Border>
+
+            <Border Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="條目預覽" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBox Header="名稱" IsReadOnly="True" PlaceholderText="—" />
+                    <TextBox Header="稀有度" IsReadOnly="True" PlaceholderText="—" />
+                    <TextBox Header="簡介" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100" PlaceholderText="尚未選擇條目" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
