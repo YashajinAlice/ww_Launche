@@ -14,8 +14,20 @@ public sealed class AppSettingsService
     public string GamePath
     {
         get => Read(GamePathKey);
-        set => Write(GamePathKey, value ?? string.Empty);
+        set
+        {
+            var next = value ?? string.Empty;
+            var prev = Read(GamePathKey);
+            Write(GamePathKey, next);
+            if (!string.Equals(prev, next, StringComparison.OrdinalIgnoreCase))
+            {
+                GamePathChanged?.Invoke(this, next);
+            }
+        }
     }
+
+    /// <summary>遊戲路徑變更時通知（首頁可刷新啟動鈕狀態）。</summary>
+    public event EventHandler<string>? GamePathChanged;
 
     public string Theme
     {

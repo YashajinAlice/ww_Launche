@@ -126,7 +126,7 @@
                         <StackPanel Spacing="2">
                             <TextBlock Text="遊戲路徑" Style="{StaticResource BodyStrongTextBlockStyle}" />
                             <TextBlock
-                                Text="指定遊戲主程式（.exe），之後啟動按鈕會使用此路徑。"
+                                Text="指定遊戲主程式（.exe），首頁「啟動」會使用此路徑。"
                                 Style="{StaticResource CaptionTextBlockStyle}"
                                 Opacity="0.75"
                                 TextWrapping="WrapWholeWords" />
@@ -137,11 +137,17 @@
                         <TextBox
                             x:Name="GamePathBox"
                             Header="路徑"
-                            PlaceholderText="尚未設定，例如 D:\Games\Wuthering Waves\...\Client-Win64-Shipping.exe"
+                            PlaceholderText="尚未設定，例如 …\Client\Binaries\Win64\Client-Win64-Shipping.exe"
                             IsReadOnly="True" />
+                        <TextBlock
+                            x:Name="GamePathStatusText"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Opacity="0.75"
+                            TextWrapping="WrapWholeWords" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button Content="瀏覽…" Click="BrowseGamePath_Click" />
                             <Button Content="清除" Click="ClearGamePath_Click" />
+                            <Button Content="檢查路徑" Click="VerifyGamePath_Click" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

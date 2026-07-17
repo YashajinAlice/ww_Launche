@@ -20,6 +20,8 @@ public partial class App : Application
 
     public AppSettingsService Settings { get; } = new();
 
+    public IGameLaunchService GameLaunch { get; } = new GameLaunchService();
+
     /// <summary>四段式版本，標題列顯示用（例：0.1.0.0）。</summary>
     public string AppVersion { get; } =
         Assembly.GetExecutingAssembly().GetName().Version?.ToString()

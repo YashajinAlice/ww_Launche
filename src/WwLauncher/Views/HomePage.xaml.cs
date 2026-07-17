@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
 using WwLauncher.Models;
 using WwLauncher.Services;
 
@@ -16,6 +17,7 @@ public sealed partial class HomePage : Page
     private AnnouncementCategory _category = AnnouncementCategory.Game;
     private bool _loaded;
     private bool _webViewReady;
+    private bool _launching;
 
     public HomePage()
     {
@@ -23,10 +25,20 @@ public sealed partial class HomePage : Page
         AnnouncementList.ItemsSource = _announcements;
         BannerFlipView.ItemsSource = _banners;
         Loaded += HomePage_Loaded;
+        Unloaded += HomePage_Unloaded;
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        RefreshLaunchState();
     }
 
     private async void HomePage_Loaded(object sender, RoutedEventArgs e)
     {
+        App.Current.Settings.GamePathChanged += Settings_GamePathChanged;
+        RefreshLaunchState();
+
         if (_loaded)
         {
             return;
@@ -34,6 +46,67 @@ public sealed partial class HomePage : Page
 
         _loaded = true;
         await LoadAnnouncementsAsync();
+    }
+
+    private void HomePage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        App.Current.Settings.GamePathChanged -= Settings_GamePathChanged;
+    }
+
+    private void Settings_GamePathChanged(object? sender, string e) => RefreshLaunchState();
+
+    private void RefreshLaunchState()
+    {
+        var status = App.Current.GameLaunch.GetStatus();
+        LaunchButton.IsEnabled = status.IsValid && !_launching;
+        ToolTipService.SetToolTip(
+            LaunchButton,
+            status.IsValid ? $"啟動：{status.Path}" : status.Message);
+    }
+
+    private void LaunchButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_launching)
+        {
+            return;
+        }
+
+        try
+        {
+            _launching = true;
+            RefreshLaunchState();
+            App.Current.GameLaunch.Launch();
+            AnnouncementStatusBar.Severity = InfoBarSeverity.Success;
+            AnnouncementStatusBar.Title = "已啟動遊戲";
+            AnnouncementStatusBar.Message = App.Current.Settings.GamePath;
+            AnnouncementStatusBar.IsOpen = true;
+        }
+        catch (Exception ex)
+        {
+            AnnouncementStatusBar.Severity = InfoBarSeverity.Error;
+            AnnouncementStatusBar.Title = "啟動失敗";
+            AnnouncementStatusBar.Message = ex.Message;
+            AnnouncementStatusBar.IsOpen = true;
+        }
+        finally
+        {
+            _launching = false;
+            RefreshLaunchState();
+        }
+    }
+
+    private void VerifyGameFilesMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var status = App.Current.GameLaunch.GetStatus();
+        AnnouncementStatusBar.Severity = status.IsValid
+            ? InfoBarSeverity.Success
+            : InfoBarSeverity.Warning;
+        AnnouncementStatusBar.Title = status.IsValid ? "遊戲路徑正常" : "遊戲路徑異常";
+        AnnouncementStatusBar.Message = string.IsNullOrWhiteSpace(status.Path)
+            ? status.Message
+            : $"{status.Message}\n{status.Path}";
+        AnnouncementStatusBar.IsOpen = true;
+        RefreshLaunchState();
     }
 
     private async void AnnouncementCategoryBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
@@ -54,27 +127,17 @@ public sealed partial class HomePage : Page
 
     private async void OpenGameFolderMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        var gamePath = App.Current.Settings.GamePath;
-        if (string.IsNullOrWhiteSpace(gamePath))
+        try
+        {
+            await App.Current.GameLaunch.OpenGameFolderAsync();
+        }
+        catch (Exception ex)
         {
             AnnouncementStatusBar.Severity = InfoBarSeverity.Warning;
-            AnnouncementStatusBar.Title = "尚未設定遊戲路徑";
-            AnnouncementStatusBar.Message = "請到「設定」頁指定遊戲主程式。";
+            AnnouncementStatusBar.Title = "無法開啟遊戲目錄";
+            AnnouncementStatusBar.Message = ex.Message;
             AnnouncementStatusBar.IsOpen = true;
-            return;
         }
-
-        var folder = Path.GetDirectoryName(gamePath);
-        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
-        {
-            AnnouncementStatusBar.Severity = InfoBarSeverity.Error;
-            AnnouncementStatusBar.Title = "目錄不存在";
-            AnnouncementStatusBar.Message = gamePath;
-            AnnouncementStatusBar.IsOpen = true;
-            return;
-        }
-
-        await Windows.System.Launcher.LaunchFolderPathAsync(folder);
     }
 
     private async Task LoadAnnouncementsAsync()

@@ -296,7 +296,10 @@
                     <FontIcon Glyph="&#xE700;" FontSize="18" />
                     <Button.Flyout>
                         <MenuFlyout>
-                            <MenuFlyoutItem Text="檢查檔案（尚未接線）" IsEnabled="False" />
+                            <MenuFlyoutItem
+                                x:Name="VerifyGameFilesMenuItem"
+                                Text="檢查遊戲檔案"
+                                Click="VerifyGameFilesMenuItem_Click" />
                             <MenuFlyoutItem
                                 x:Name="OpenGameFolderMenuItem"
                                 Text="開啟遊戲目錄"
@@ -314,6 +317,7 @@
                     FontWeight="SemiBold"
                     CornerRadius="8"
                     IsEnabled="False"
+                    Click="LaunchButton_Click"
                     ToolTipService.ToolTip="遊戲路徑尚未設定"
                     Style="{StaticResource AccentButtonStyle}" />
             </StackPanel>

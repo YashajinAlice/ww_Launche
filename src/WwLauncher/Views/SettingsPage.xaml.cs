@@ -19,6 +19,7 @@ public sealed partial class SettingsPage : Page
         AuthorText.Text = $"作者：{App.AppAuthor}";
         VersionText.Text = $"版本 {App.Current.AppVersion}";
         GamePathBox.Text = App.Current.Settings.GamePath;
+        RefreshGamePathStatus();
         UpdateStatusText.Text = "點擊以檢查更新";
 
         var logo = AppAssets.LoadLogo();
@@ -259,6 +260,7 @@ public sealed partial class SettingsPage : Page
 
         if (host is null)
         {
+            await ShowSimpleDialogAsync("無法開啟檔案選擇器", "找不到主視窗，請重試。");
             return;
         }
 
@@ -266,6 +268,7 @@ public sealed partial class SettingsPage : Page
         if (!string.IsNullOrWhiteSpace(path))
         {
             GamePathBox.Text = path;
+            RefreshGamePathStatus();
         }
     }
 
@@ -273,5 +276,16 @@ public sealed partial class SettingsPage : Page
     {
         App.Current.Settings.GamePath = string.Empty;
         GamePathBox.Text = string.Empty;
+        RefreshGamePathStatus();
+    }
+
+    private void VerifyGamePath_Click(object sender, RoutedEventArgs e) => RefreshGamePathStatus();
+
+    private void RefreshGamePathStatus()
+    {
+        var status = App.Current.GameLaunch.GetStatus(GamePathBox.Text);
+        GamePathStatusText.Text = status.IsValid
+            ? $"✓ {status.Message}"
+            : status.Message;
     }
 }

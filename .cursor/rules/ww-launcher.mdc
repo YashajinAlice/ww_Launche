@@ -10,7 +10,7 @@ alwaysApply: true
 - 目前為 **unpackaged**（`WindowsPackageType=None`），目標框架 `net8.0-windows10.0.19041.0`。
 - 預設平台 **x64**（亦支援 ARM64）；建置請用 `-p:Platform=x64`。
 - 導航：首頁、角色分析、抽卡記錄、WIKI、數據終端；底部 **設定**（齒輪，紫色選中指示）。
-- 設定頁：LOGO、軟件名稱、作者、版本、檢查更新、主題、遊戲路徑。
+- 設定頁：LOGO、軟件名稱、作者、版本、檢查更新、主題、遊戲路徑（選 .exe、驗證、清除；首頁啟動／開目錄／檢查檔案會使用）。
 - 首頁公告分「遊戲公告 / 作者公告」；皆經機器人 `GET /api/launcher/announcements`（作者公告 JSON 由 bot 維護，遊戲由 bot 代理 Kuro）。列表只顯示標題，不加 `[game]` 前綴。
 - Bot API 預設 `https://fulin-net.top`，可用環境變數 `WW_LAUNCHER_BOT_API` 覆寫。
 - 版本更新：`Services/UpdateService`；每個版本發佈請上 **GitHub Releases**（zip + Setup），`docs/update-manifest.json` 的 `downloadUrl` 指向 Release 資產。
