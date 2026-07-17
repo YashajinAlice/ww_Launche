@@ -21,6 +21,12 @@ public sealed partial class SettingsPage : Page
         GamePathBox.Text = App.Current.Settings.GamePath;
         UpdateStatusText.Text = "點擊以檢查更新";
 
+        var logo = AppAssets.LoadLogo();
+        if (logo is not null)
+        {
+            AppLogoImage.Source = logo;
+        }
+
         var theme = App.Current.Settings.Theme;
         ThemeRadioButtons.SelectedIndex = theme switch
         {

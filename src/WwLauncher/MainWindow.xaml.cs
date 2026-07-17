@@ -15,20 +15,25 @@ public sealed partial class MainWindow : Window
         Title = App.AppDisplayName;
         AppTitleBar.Title = App.Current.AppTitleWithVersion;
 
+        var logo = AppAssets.LoadLogo();
+        if (logo is not null)
+        {
+            AppTitleBar.IconSource = new ImageIconSource { ImageSource = logo };
+        }
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
 
         try
         {
-            var ico = Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico");
-            if (File.Exists(ico))
+            if (File.Exists(AppAssets.IconPath))
             {
-                AppWindow.SetIcon(ico);
+                AppWindow.SetIcon(AppAssets.IconPath);
             }
-            else
+            else if (File.Exists(AppAssets.StoreLogoPath))
             {
-                AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "StoreLogo.png"));
+                AppWindow.SetIcon(AppAssets.StoreLogoPath);
             }
         }
         catch

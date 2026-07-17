@@ -29,7 +29,7 @@
                         CornerRadius="12"
                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
                             <Image
-                                Source="ms-appx:///Assets/Logo.png"
+                                x:Name="AppLogoImage"
                                 Stretch="Uniform"
                                 Margin="4" />
                     </Border>
