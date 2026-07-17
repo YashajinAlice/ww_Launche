@@ -14,6 +14,7 @@ alwaysApply: true
 - 首頁公告分「遊戲公告 / 作者公告」；皆經機器人 `GET /api/launcher/announcements`（作者公告 JSON 由 bot 維護，遊戲由 bot 代理 Kuro）。列表只顯示標題，不加 `[game]` 前綴。
 - Bot API 預設 `https://fulin-net.top`，可用環境變數 `WW_LAUNCHER_BOT_API` 覆寫。
 - 版本更新：`Services/UpdateService`；每個版本發佈請上 **GitHub Releases**（zip + Setup），`docs/update-manifest.json` 的 `downloadUrl` 指向 Release 資產。
-- **Git 提交**：只用倉庫既有作者身分（YashajinAlice）；**禁止**在 commit message 加 `Co-authored-by: Cursor` 或其他 AI 共同作者，避免 GitHub Contributors 出現 AI。
+- **Git 提交**：只用倉庫既有作者身分（YashajinAlice）；**禁止**加 `Co-authored-by: Cursor` / `Made-with: Cursor`。倉庫設 `core.hooksPath=.githooks` 以剝除自動插入的 trailer。
+- **發佈**：`scripts/publish-release.ps1` 上傳 GitHub Releases（Setup + zip）。
 - 擴充時延續 Models/Services 分層，避免把邏輯塞進 XAML code-behind。
 - 回覆使用者時使用**繁體中文**。
