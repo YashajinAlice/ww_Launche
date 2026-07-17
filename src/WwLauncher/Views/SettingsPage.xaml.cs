@@ -138,7 +138,7 @@ public sealed partial class SettingsPage : Page
             XamlRoot = XamlRoot,
             Title = "確認更新",
             Content = body,
-            PrimaryButtonText = "確認更新",
+            PrimaryButtonText = "確認更新並重啟",
             CloseButtonText = "稍後",
             DefaultButton = ContentDialogButton.Primary,
         };

@@ -4,6 +4,6 @@
   "downloadUrl": "https://raw.githubusercontent.com/YashajinAlice/ww_Launche/main/docs/releases/YangBao-0.2.0-win-x64.zip",
   "sha256": "",
   "mandatory": false,
-  "releaseNotes": "自動更新測試：確認後會下載更新包、覆蓋檔案並重啟。包含設定頁檢查更新對話框與自我更新流程。",
+  "releaseNotes": "自動更新：按「確認更新」後會下載、覆蓋並重啟啟動器（無需手動開網頁）。",
   "publishedAt": "2026-07-17T23:40:00+08:00"
 }
