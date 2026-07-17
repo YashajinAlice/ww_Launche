@@ -12,18 +12,21 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         WindowHelper.Track(this);
 
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
+        AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
+
+        // 必須在 SetTitleBar 之後設定，否則標題文字可能不顯示
+        // 對齊參考：標題列顯示「秧寶 0.x.x.x」單行文字
         Title = App.AppDisplayName;
         AppTitleBar.Title = App.Current.AppTitleWithVersion;
+        AppTitleBar.Subtitle = string.Empty;
 
-        var logo = AppAssets.LoadLogo();
+        var logo = AppAssets.LoadLogo(decodePixelWidth: 16);
         if (logo is not null)
         {
             AppTitleBar.IconSource = new ImageIconSource { ImageSource = logo };
         }
-
-        ExtendsContentIntoTitleBar = true;
-        SetTitleBar(AppTitleBar);
-        AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
 
         try
         {
@@ -112,7 +115,7 @@ public sealed partial class MainWindow : Window
 
     private void NavigateTag(string tag)
     {
-        // 標題列固定「秧寶 版本」，不隨頁面改 Subtitle
+        // 標題列固定顯示「秧寶」+ 版本（Subtitle）
         switch (tag)
         {
             case "home":

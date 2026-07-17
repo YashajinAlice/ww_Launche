@@ -20,6 +20,7 @@
 
         <TitleBar
             x:Name="AppTitleBar"
+            Title="秧寶"
             IsBackButtonVisible="True"
             IsBackButtonEnabled="False"
             BackRequested="AppTitleBar_BackRequested"

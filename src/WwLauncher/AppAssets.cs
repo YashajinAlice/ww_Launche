@@ -8,7 +8,7 @@ internal static class AppAssets
     public static string StoreLogoPath => Path.Combine(AppContext.BaseDirectory, "Assets", "StoreLogo.png");
     public static string IconPath => Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico");
 
-    public static BitmapImage? TryLoadBitmap(string path)
+    public static BitmapImage? TryLoadBitmap(string path, int? decodePixelWidth = null)
     {
         try
         {
@@ -17,7 +17,14 @@ internal static class AppAssets
                 return null;
             }
 
-            return new BitmapImage(new Uri(path));
+            var bitmap = new BitmapImage();
+            if (decodePixelWidth is int width and > 0)
+            {
+                bitmap.DecodePixelWidth = width;
+            }
+
+            bitmap.UriSource = new Uri(path);
+            return bitmap;
         }
         catch
         {
@@ -25,6 +32,6 @@ internal static class AppAssets
         }
     }
 
-    public static BitmapImage? LoadLogo() =>
-        TryLoadBitmap(LogoPath) ?? TryLoadBitmap(StoreLogoPath);
+    public static BitmapImage? LoadLogo(int? decodePixelWidth = null) =>
+        TryLoadBitmap(LogoPath, decodePixelWidth) ?? TryLoadBitmap(StoreLogoPath, decodePixelWidth);
 }

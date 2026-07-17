@@ -10,9 +10,19 @@ public static class LauncherConfig
 
     /// <summary>
     /// 遠端更新清單。優先讀環境變數 WW_LAUNCHER_UPDATE_URL，
-    /// 否則使用 GitHub raw 預設位址。
+    /// 否則使用 GitHub raw（帶版本參數避免 CDN 快取舊清單）。
     /// </summary>
-    public static string UpdateManifestUrl =>
-        Environment.GetEnvironmentVariable("WW_LAUNCHER_UPDATE_URL")
-        ?? "https://raw.githubusercontent.com/YashajinAlice/ww_Launche/main/docs/update-manifest.json";
+    public static string UpdateManifestUrl
+    {
+        get
+        {
+            var fromEnv = Environment.GetEnvironmentVariable("WW_LAUNCHER_UPDATE_URL");
+            if (!string.IsNullOrWhiteSpace(fromEnv))
+            {
+                return fromEnv;
+            }
+
+            return "https://raw.githubusercontent.com/YashajinAlice/ww_Launche/main/docs/update-manifest.json?v=0.2.2";
+        }
+    }
 }
