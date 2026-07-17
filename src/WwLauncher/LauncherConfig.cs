@@ -22,7 +22,7 @@ public static class LauncherConfig
                 return fromEnv;
             }
 
-            return "https://raw.githubusercontent.com/YashajinAlice/ww_Launche/main/docs/update-manifest.json?v=0.2.2";
+            return "https://raw.githubusercontent.com/YashajinAlice/ww_Launche/main/docs/update-manifest.json?v=0.2.3";
         }
     }
 }

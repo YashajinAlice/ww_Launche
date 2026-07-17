@@ -4,6 +4,6 @@
   "downloadUrl": "https://github.com/YashajinAlice/ww_Launche/releases/download/v0.2.3/YangBao-0.2.3-win-x64.zip",
   "sha256": "",
   "mandatory": false,
-  "releaseNotes": "修正版本檢查；更新清單改走 GitHub Releases。",
-  "publishedAt": "2026-07-18T00:10:00+08:00"
+  "releaseNotes": "測試內容",
+  "publishedAt": "2026-07-18T00:23:43+08:00"
 }
